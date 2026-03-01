@@ -1,3 +1,5 @@
+package com.moneyapp.data
+
 import java.util.UUID
 import androidx.room.Entity
 import androidx.room.PrimaryKey
