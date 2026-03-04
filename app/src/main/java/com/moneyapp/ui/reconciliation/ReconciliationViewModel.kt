@@ -1,5 +1,6 @@
 package com.moneyapp.ui.reconciliation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.moneyapp.data.Event
@@ -47,10 +48,13 @@ class ReconciliationViewModel(
 
     fun loadData() {
         viewModelScope.launch {
+            Log.i(null, "ReconciliationViewModel.loadData")
             _state.value = _state.value.copy(isLoading = true, error = null)
             try {
                 val events = repo.getEventsWithRemaining()
+                Log.i(null, events.joinToString())
                 val txns = repo.getAllTransactions()
+                Log.i(null, txns.joinToString())
                 val filtered = applyFilters(events, txns)
                 _state.value = _state.value.copy(
                     eventsWithRemaining = filtered.first,

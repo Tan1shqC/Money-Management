@@ -1,5 +1,6 @@
 package com.moneyapp.ui.transaction
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.moneyapp.data.Transaction
@@ -42,6 +43,7 @@ class CreateTransactionViewModel(
     }
 
     fun createTransaction() {
+        Log.i("Creating Transaction", "")
         val state = _state.value
         if (state.amount <= 0L) {
             _state.value = _state.value.copy(error = "Amount must be > 0")

@@ -1,5 +1,6 @@
 package com.moneyapp.ui.reconciliation
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moneyapp.repo.EventWithRemaining
 import com.moneyapp.data.Transaction
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -39,6 +42,14 @@ import java.util.Locale
 @Composable
 fun ReconciliationScreen(viewModel: ReconciliationViewModel) {
     val state by viewModel.state.collectAsState()
+    Log.d("MoneyApp", "UI sees events: ${state.eventsWithRemaining.size}")
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(5000)
+            Log.d("MoneyApp", "5s tick")
+            viewModel.loadData()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -65,7 +76,9 @@ fun ReconciliationScreen(viewModel: ReconciliationViewModel) {
             // Two-pane view
             Row(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxSize()
+                    .background(Color.Red)
                     .padding(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -75,15 +88,17 @@ fun ReconciliationScreen(viewModel: ReconciliationViewModel) {
                     selected = state.selectedEvent,
                     enabled = state.mode == ReconciliationMode.EDIT,
                     onSelect = { viewModel.selectEvent(it) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).background(Color.Green)
                 )
 
-                Divider(
-                    modifier = Modifier
-                        .fillMaxSize(1f)
-                        .padding(horizontal = 4.dp),
-                    thickness = 1.dp
-                )
+                // Divider(
+                //     modifier = Modifier
+                //         .fillMaxSize(1f)
+                //         .padding(horizontal = 4.dp),
+                //         // .width(1.dp),
+                //     thickness = 1.dp,
+                //     color = MaterialTheme.colorScheme.outline
+                // )
 
                 // Transactions Pane
                 TransactionsPane(
@@ -94,6 +109,14 @@ fun ReconciliationScreen(viewModel: ReconciliationViewModel) {
                     modifier = Modifier.weight(1f)
                 )
             }
+
+            // EventsPane(
+            //     events = state.eventsWithRemaining,
+            //     selected = state.selectedEvent,
+            //     enabled = state.mode == ReconciliationMode.EDIT,
+            //     onSelect = { viewModel.selectEvent(it) },
+            //     // modifier = Modifier.weight(1f)
+            // )
         }
     }
 }
@@ -167,6 +190,7 @@ fun EventsPane(
     onSelect: (EventWithRemaining) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    Log.i(null, "Events Pane")
     Column(modifier = modifier) {
         Text(
             "Events (${events.size})",
@@ -179,7 +203,10 @@ fun EventsPane(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(events) { event ->
+            items(
+                items = events,
+                key = { event -> event.event.id }   // must be unique & stable
+            ) { event ->
                 EventCard(
                     event = event,
                     isSelected = selected?.event?.id == event.event.id,
@@ -267,7 +294,10 @@ fun TransactionsPane(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(transactions) { txn ->
+            items(
+                items = transactions,
+                key = { txn -> txn.id }   // must be unique & stable
+            ) { txn ->
                 TransactionCard(
                     transaction = txn,
                     isSelected = selected?.id == txn.id,
